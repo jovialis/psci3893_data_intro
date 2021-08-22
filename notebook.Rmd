@@ -1,0 +1,96 @@
+```{r}
+# Main settings
+filename <- "search-history.json"
+```
+
+
+```{r}
+# Install the packages that we'll need onto your computer
+install.packages("tidyjson")
+```
+
+
+```{r}
+# Import the libraries we need to read .JSON files
+library(tidyjson)
+
+# Import the Tidyverse—this should be the backbone of all your data processing
+library(tidyverse)
+```
+
+```{r}
+# Load the file into memory, then parse the JSON data into a DataFrame.
+# Note the %>% syntax. This is a "pipe". It allows you to send the output of
+# a function and pass it as the first argument in the next function. Here,
+# the output of "file(filename)" is piped into "fromJSON(...)"
+df <- file(filename) %>% 
+  fromJSON(simplifyDataFrame = TRUE)
+
+# We can call a variable's name to display it
+df
+```
+
+```{r}
+# Let's simplify our table a little bit, because we don't need messy data!
+df2 <- df %>%
+  # We don't need the "header" or "products" columns because they're both "YouTube";
+  # they're self explanatory.
+  # 
+  # To drop columns, we select the columns that AREN'T header or products by
+  # prefixing column names with with a negation (negative sign).
+  select(-header, -products) %>%
+  
+  # Weird! All of our search terms are prefixed with "Searched for," rather than
+  # just your search term. Why don't we get rid of that...
+  # 
+  # We can use the mutate function to make changes to existing columns.
+  # Let's use the str_replace function to remove the "Searched for ", replacing
+  # it with nothing. Note the "^" at the start: this tells the function to
+  # only replace "Searched for " if it's at the start of the text.
+  mutate(title = str_replace(title, "^Searched for ", "")) %>%
+  
+  # I'm also picky. Let's rename "title" to "search" and "titleUrl" to just "url".
+  # 
+  # Using the rename function, we tell the computer what each new column should
+  # be renamed from...
+  rename(
+    search="title",
+    url="titleUrl"
+  )
+
+df2
+```
+
+```{r}
+# Awesome! Now all we have to do is filter our data
+# to a specific time frame...
+
+start_date <- as.Date("2021-01-01")
+end_date <- as.Date("2021-05-20")
+
+df3 <- df2 %>%
+  # Let's use the mutate function and change the data type of our "time" column
+  # into Dates. That'll allow us to compare them to our start and end dates
+  mutate(
+    time = as.Date(time)
+  ) %>%
+  
+  # Now, let's filter our rows based on when our start and end dates are.
+  # 
+  # We can use the "filter" function to select only rows that satisfy a condition.
+  # Here, we want our start <= date <= end. 
+  # 
+  # We can use the & (AND) operator to combine multiple conditions.
+  filter(
+    start_date <= time & time <= end_date
+  )
+
+df3
+```
+
+```{r}
+# We're done! Let's export your data to a CSV (Comma Separated Value) file
+# that you can open in Excel. Great job!
+write.csv(df3, "my_youtube_data.csv", row.names = FALSE)
+```
+
