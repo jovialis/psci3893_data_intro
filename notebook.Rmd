@@ -6,13 +6,13 @@ filename <- "search-history.json"
 
 ```{r}
 # Install the packages that we'll need onto your computer
-install.packages("tidyjson")
+install.packages("jsonlite")
 ```
 
 
 ```{r}
 # Import the libraries we need to read .JSON files
-library(tidyjson)
+library(jsonlite)
 
 # Import the Tidyverse—this should be the backbone of all your data processing
 library(tidyverse)
